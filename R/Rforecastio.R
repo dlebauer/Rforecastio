@@ -52,11 +52,11 @@ fio.forecast <- function(api.key, latitude, longitude, for.time, time.formatter=
 
   # using RCurl's getURLContent() since it fully supports http or https
   if (missing(for.time)) {
-    fio.json <- getURLContent(url=sprintf("https://api.forecast.io/forecast/%s/%s,%s",
-                                      api.key, latitude, longitude), ...)
+    fio.json <- getURLContent(url = paste(sprintf("https://api.forecast.io/forecast/%s/%s,%s",
+                                      api.key, latitude, longitude), "?solar", sep = "/"), ...)
   } else {
-    fio.json <- getURLContent(url=sprintf("https://api.forecast.io/forecast/%s/%s,%s,%d",
-                                      api.key, latitude, longitude, for.time), ...)
+    fio.json <- getURLContent(url = paste(sprintf("https://api.forecast.io/forecast/%s/%s,%s",
+                                                  api.key, latitude, longitude), "?solar", for.time, sep = "/"), ...)
   }
 
   if (class(fio.json) == "raw") {
@@ -65,7 +65,12 @@ fio.forecast <- function(api.key, latitude, longitude, for.time, time.formatter=
 
   # take the JSON blob we got from forecast.io and make an R list from it
   fio <- fromJSON(fio.json)
+  hourly <- lapply(fio$hourly$data, unlist)
+  solar <- lapply(hourly, function(x) x[grepl("solar", names(x))])
+  solar.df <- suppressWarnings(do.call("rbind", sapply(solar, function(x) if(length(x) > 1){as.numeric(x)}else{rep(0,5)})))
 
+  colnames(solar.df) <- c("azimuth", "altitude", "dni", "ghi", "dhi", "etr")
+  lapply(fio$hourly$data, function(x) ifelse(!is.null(x$solar), x$solar, x$solar))
   # extract hourly forecast data
   fio.hourly.df <- ldply(fio$hourly$data, data.frame)
   fio.hourly.df$time <- timely(time.formatter, fio.hourly.df$time, origin="1970-01-01")

@@ -1,0 +1,17 @@
+---
+title: "Rforecastio Demo"
+author: "David LeBauer"
+date: "Thursday, December 04, 2014"
+output: html_document
+---
+
+
+
+```{r}
+key <- readLines("key")
+fio.list <- fio.forecast(api.key = key, 
+                         latitude = "37.8267", longitude = "-122.423", 
+                         for.time = as.integer(Sys.time())-(60*60*6),
+                         .opts = list(ssl.verifypeer = FALSE, followlocation=TRUE))
+
+```
