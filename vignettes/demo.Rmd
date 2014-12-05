@@ -9,9 +9,10 @@ output: html_document
 
 ```{r}
 key <- readLines("key")
+unix.time <- as.numeric(as.POSIXct("2013-01-01 EST"))
 fio.list <- fio.forecast(api.key = key, 
                          latitude = "37.8267", longitude = "-122.423", 
-                         for.time = as.integer(Sys.time())-(60*60*6),
+                         for.time = unix.time,
                          .opts = list(ssl.verifypeer = FALSE, followlocation=TRUE))
 
 ```
